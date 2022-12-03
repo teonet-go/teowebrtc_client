@@ -1,4 +1,4 @@
-// Copyright 2021 Kirill Scherba <kirill@scherba.ru>. All rights reserved.
+// Copyright 2021-2022 Kirill Scherba <kirill@scherba.ru>. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -52,12 +52,12 @@ func Connect(scheme, signalServerAddr, login, server string, connected func(peer
 	}
 
 	pc.OnSignalingStateChange(func(state webrtc.SignalingState) {
-		log.Println("Signal changed:", state)
+		log.Println("Signaling state change:", state)
 	})
 
 	// Add handlers for setting up the connection.
 	pc.OnICEConnectionStateChange(func(connectionState webrtc.ICEConnectionState) {
-		log.Printf("ICE Connection State has changed: %s\n", connectionState.String())
+		log.Printf("ICE connection state change: %s\n", connectionState.String())
 		switch connectionState.String() {
 		case "connected":
 			connected(server, &DataChannel{dc})
@@ -71,11 +71,7 @@ func Connect(scheme, signalServerAddr, login, server string, connected func(peer
 	offer, _ := pc.CreateOffer(nil)
 
 	// Send offer and get answer
-	offerData, err := json.Marshal(offer)
-	if err != nil {
-		return
-	}
-	message, err := signal.WriteOffer(server, offerData)
+	message, err := signal.WriteOffer(server, offer)
 	if err != nil {
 		return
 	}
@@ -90,10 +86,11 @@ func Connect(scheme, signalServerAddr, login, server string, connected func(peer
 	}
 	peer := sig.Peer
 	var answer webrtc.SessionDescription
-	err = json.Unmarshal(sig.Data, &answer)
+	d, _ := json.Marshal(sig.Data)
+	err = json.Unmarshal(d, &answer)
 	if err != nil {
 		log.Println(errMsg, err, err, "message: '"+string(message)+"'",
-			"sig.Data: '"+string(sig.Data)+"'")
+			"sig.Data: '"+string(d)+"'")
 		return
 	}
 	log.Printf("Got answer from %s", sig.Peer)
@@ -102,14 +99,9 @@ func Connect(scheme, signalServerAddr, login, server string, connected func(peer
 	pc.OnICECandidate(func(i *webrtc.ICECandidate) {
 		if i != nil {
 			log.Println("ICECandidate:", i)
-			candidateData, err := json.Marshal(i)
-			if err != nil {
-				log.Panicln("can't marshal ICECandidate, error:", err)
-				return
-			}
-			signal.WriteCandidate(peer, candidateData)
+			signal.WriteCandidate(peer, i)
 		} else {
-			log.Println("Collection of candidates is finished ")
+			log.Println("Collection of candidates is finished")
 			signal.WriteCandidate(peer, nil)
 		}
 	})
@@ -128,7 +120,19 @@ func Connect(scheme, signalServerAddr, login, server string, connected func(peer
 		return
 	}
 
-	// Get servers ICECandidate
+	// Get remote ICECandidate
+	GetICECandidates(signal, pc)
+
+	// Close signal server connection
+	// signal.Close()
+	<-wait
+
+	return
+}
+
+// Get remote ICECandidates
+func GetICECandidates(signal *teowebrtc_signal_client.SignalClient,
+	pc *webrtc.PeerConnection) {
 	for {
 		sig, err := signal.WaitSignal()
 		if err != nil {
@@ -137,29 +141,38 @@ func Connect(scheme, signalServerAddr, login, server string, connected func(peer
 
 		// Unmarshal ICECandidate signal
 		var i webrtc.ICECandidate
-		if len(sig.Data) == 0 {
+		d, err := json.Marshal(sig.Data)
+		if err != nil || len(d) == 0 || string(d) == "null" {
 			log.Println("All ICECandidate processed")
 			break
 		}
-		err = json.Unmarshal(sig.Data, &i)
+		err = json.Unmarshal(d, &i)
 		if err != nil {
-			log.Println("can't unmarshal candidate, error:", err)
+			log.Println("can't unmarshal candidate, error:", err, string(d))
+			// skipRead = true
+			// break
 			continue
 		}
-		log.Printf("Got ICECandidatecandidate from %s", sig.Peer)
+		log.Printf("Got ICECandidate from: %s, data: %s, i: %v\n", sig.Peer,
+			string(d), i)
+
+		// Convert to ICECandidateInit
+		var ii = i.ToJSON()
+		if ii.Candidate == "candidate:" {
+			err = json.Unmarshal(d, &ii)
+			if err != nil {
+				log.Println("can't Unmarshal ICECandidateInit, error:", err)
+				continue
+			}
+		}
 
 		// Add servers ICECandidate
-		err = pc.AddICECandidate(i.ToJSON())
+		log.Println("ICECandidateInit:", ii)
+		err = pc.AddICECandidate(ii)
 		if err != nil {
-			log.Println("can't add ICECandidate, error:", err)
+			log.Println("can't add ICECandidateInit, error:", err)
 		}
 	}
-
-	// Close signal server connection
-	signal.Close()
-	<-wait
-
-	return
 }
 
 func NewDataChannel(dc *webrtc.DataChannel) *DataChannel {

@@ -14,7 +14,7 @@ import (
 	"github.com/teonet-go/teowebrtc_client"
 )
 
-var addr = flag.String("addr", "localhost:8080", "http service address")
+var addr = flag.String("addr", "localhost:8081", "http service address")
 var name = flag.String("name", "client-1", "client name")
 var server = flag.String("server", "server-1", "server name")
 
@@ -25,34 +25,36 @@ func main() {
 	var id = 0
 connect:
 	// Connect to teo webrtc application (server)
-	err := teowebrtc_client.Connect("http", *addr, *name, *server, func(peer string, d *teowebrtc_client.DataChannel) {
-		log.Println("Connected to", peer)
-		var connected = true
+	err := teowebrtc_client.Connect("http", *addr, *name, *server,
+		func(peer string, dc *teowebrtc_client.DataChannel) {
+			log.Println("Connected to", peer)
+			var connected = true
 
-		// On open Send messages to created data channel
-		d.OnOpen(func() {
-			for connected {
-				id++
-				msg := fmt.Sprintf("Hello from %s with id %d!", *name, id)
-				err := d.Send([]byte(msg))
-				if err != nil {
-					log.Printf("Send error: %s\n", err)
-					continue
+			// On open Send messages to created data channel
+			dc.OnOpen(func() {
+				for connected {
+					id++
+					msg := fmt.Sprintf("Hello from %s with id %d!", *name, id)
+					err := dc.Send([]byte(msg))
+					if err != nil {
+						log.Printf("Send error: %s\n", err)
+						continue
+					}
+					log.Printf("Send: %s", msg)
+					time.Sleep(5 * time.Second)
 				}
-				log.Printf("Send: %s", msg)
-				time.Sleep(5 * time.Second)
-			}
-		})
+			})
 
-		d.OnClose(func() {
-			log.Println("Connection closed")
-			connected = false
-		})
+			dc.OnClose(func() {
+				log.Println("Connection closed")
+				connected = false
+			})
 
-		d.OnMessage(func(data []byte) {
-			log.Printf("Got: %s", data)
-		})
-	})
+			dc.OnMessage(func(data []byte) {
+				log.Printf("Got: %s", data)
+			})
+		},
+	)
 	if err != nil {
 		log.Println("connect error:", err)
 	}
