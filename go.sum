@@ -119,8 +119,8 @@ github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.7.1 h1:5TQK59W5E3v0r2duFAb7P95B6hEeOyEnHRa8MjYSMTY=
 github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
-github.com/teonet-go/teowebrtc_signal_client v0.0.7 h1:diUVPuLnduncYiv7ZfX108TGMHlAXEDMTtPuTz47XpU=
-github.com/teonet-go/teowebrtc_signal_client v0.0.7/go.mod h1:+RgRCiMUdMevH+Ua4zWw9Wda231mBQiIo+vhhlpvx9Y=
+github.com/teonet-go/teowebrtc_signal_client v0.0.8 h1:RyAh3vUe0f4/zcVeNg9Q0I93zhZxxBVpcLIrls0/5jA=
+github.com/teonet-go/teowebrtc_signal_client v0.0.8/go.mod h1:+RgRCiMUdMevH+Ua4zWw9Wda231mBQiIo+vhhlpvx9Y=
 github.com/ugorji/go v1.1.7 h1:/68gy2h+1mWMrwZFeD1kQialdSzAb432dtpeJ42ovdo=
 github.com/ugorji/go v1.1.7/go.mod h1:kZn38zHttfInRq0xu/PH0az30d+z6vm202qpg1oXVMw=
 github.com/ugorji/go/codec v1.1.7 h1:2SvQaVZ1ouYrrKKwoSk2pzd4A9evlKJb9oTL+OaLUSs=

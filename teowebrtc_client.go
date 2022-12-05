@@ -9,8 +9,8 @@ import (
 	"encoding/json"
 	"log"
 
-	"github.com/teonet-go/teowebrtc_signal_client"
 	"github.com/pion/webrtc/v3"
+	"github.com/teonet-go/teowebrtc_signal_client"
 )
 
 func Connect(scheme, signalServerAddr, login, server string, connected func(peer string, dc *DataChannel)) (err error) {
@@ -57,7 +57,7 @@ func Connect(scheme, signalServerAddr, login, server string, connected func(peer
 
 	// Add handlers for setting up the connection.
 	pc.OnICEConnectionStateChange(func(connectionState webrtc.ICEConnectionState) {
-		log.Printf("ICE connection state change: %s\n", connectionState.String())
+		log.Printf("ICE connection state has change: %s\n", connectionState.String())
 		switch connectionState.String() {
 		case "connected":
 			connected(server, &DataChannel{dc})
@@ -93,15 +93,15 @@ func Connect(scheme, signalServerAddr, login, server string, connected func(peer
 			"sig.Data: '"+string(d)+"'")
 		return
 	}
-	log.Printf("Got answer from %s", sig.Peer)
+	log.Printf("got answer from %s", sig.Peer)
 
 	// Send AddICECandidate to remote peer
 	pc.OnICECandidate(func(i *webrtc.ICECandidate) {
 		if i != nil {
 			log.Println("ICECandidate:", i)
-			signal.WriteCandidate(peer, i)
+			signal.WriteCandidate(peer, i.ToJSON())
 		} else {
-			log.Println("Collection of candidates is finished")
+			log.Println("collection of candidates is finished")
 			signal.WriteCandidate(peer, nil)
 		}
 	})
@@ -140,34 +140,22 @@ func GetICECandidates(signal *teowebrtc_signal_client.SignalClient,
 		}
 
 		// Unmarshal ICECandidate signal
-		var i webrtc.ICECandidate
-		d, err := json.Marshal(sig.Data)
-		if err != nil || len(d) == 0 || string(d) == "null" {
-			log.Println("All ICECandidate processed")
+		data, err := json.Marshal(sig.Data)
+		if err != nil || len(data) == 0 || string(data) == "null" {
+			log.Println("all ICECandidate processed")
 			break
 		}
-		err = json.Unmarshal(d, &i)
-		if err != nil {
-			log.Println("can't unmarshal candidate, error:", err, string(d))
-			// skipRead = true
-			// break
-			continue
-		}
-		log.Printf("Got ICECandidate from: %s, data: %s, i: %v\n", sig.Peer,
-			string(d), i)
 
 		// Convert to ICECandidateInit
-		var ii = i.ToJSON()
-		if ii.Candidate == "candidate:" {
-			err = json.Unmarshal(d, &ii)
-			if err != nil {
-				log.Println("can't Unmarshal ICECandidateInit, error:", err)
-				continue
-			}
+		var ii webrtc.ICECandidateInit
+		log.Printf("got ICECandidate from: %s\n", sig.Peer)
+		err = json.Unmarshal(data, &ii)
+		if err != nil {
+			log.Println("can't Unmarshal ICECandidateInit, error:", err)
+			continue
 		}
 
 		// Add servers ICECandidate
-		log.Println("ICECandidateInit:", ii)
 		err = pc.AddICECandidate(ii)
 		if err != nil {
 			log.Println("can't add ICECandidateInit, error:", err)
