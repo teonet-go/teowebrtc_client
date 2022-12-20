@@ -188,3 +188,7 @@ func (d *DataChannel) OnMessage(f func(data []byte)) {
 func (d *DataChannel) Send(data []byte) error {
 	return d.dc.Send(data)
 }
+
+func (d *DataChannel) Close() error {
+	return d.dc.Close()
+}
