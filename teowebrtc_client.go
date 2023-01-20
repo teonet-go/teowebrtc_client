@@ -60,7 +60,7 @@ func Connect(scheme, signalServerAddr, login, server string, connected func(peer
 		log.Printf("ICE connection state has change: %s\n", connectionState.String())
 		switch connectionState.String() {
 		case "connected":
-			connected(server, &DataChannel{dc})
+			connected(server, NewDataChannel(dc))
 		case "disconnected":
 			dc.Close()
 			wait <- struct{}{}
@@ -164,11 +164,12 @@ func GetICECandidates(signal *teowebrtc_signal_client.SignalClient,
 }
 
 func NewDataChannel(dc *webrtc.DataChannel) *DataChannel {
-	return &DataChannel{dc}
+	return &DataChannel{dc, nil}
 }
 
 type DataChannel struct {
-	dc *webrtc.DataChannel
+	dc   *webrtc.DataChannel
+	user interface{}
 }
 
 func (d *DataChannel) OnOpen(f func()) {
@@ -191,4 +192,13 @@ func (d *DataChannel) Send(data []byte) error {
 
 func (d *DataChannel) Close() error {
 	return d.dc.Close()
+}
+
+func (d *DataChannel) GetUser() interface{} {
+	return d.user
+}
+
+func (d *DataChannel) SetUser(user interface{}) {
+	d.user = user
+	log.Printf("user type %T\n", user)
 }
