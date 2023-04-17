@@ -7,11 +7,13 @@ package teowebrtc_client
 
 import (
 	"encoding/json"
-	"log"
 
 	"github.com/pion/webrtc/v3"
+	"github.com/teonet-go/teowebrtc_log"
 	"github.com/teonet-go/teowebrtc_signal_client"
 )
+
+var log = teowebrtc_log.GetLog(teowebrtc_log.Package_teowebrtc_client)
 
 func Connect(scheme, signalServerAddr, login, server string, connected func(peer string, dc *DataChannel)) (err error) {
 
@@ -200,5 +202,5 @@ func (d *DataChannel) GetUser() interface{} {
 
 func (d *DataChannel) SetUser(user interface{}) {
 	d.user = user
-	log.Printf("user type %T\n", user)
+	// log.Printf("user type %T\n", user)
 }
