@@ -7,7 +7,7 @@ module github.com/teonet-go/teowebrtc_client
 go 1.20
 
 require (
-	github.com/pion/webrtc/v3 v3.2.9
+	github.com/pion/webrtc/v3 v3.2.10
 	github.com/teonet-go/teowebrtc_log v0.0.1
 	github.com/teonet-go/teowebrtc_signal_client v0.0.9
 )
@@ -18,7 +18,7 @@ require (
 	github.com/klauspost/compress v1.16.5 // indirect
 	github.com/pion/datachannel v1.5.5 // indirect
 	github.com/pion/dtls/v2 v2.2.7 // indirect
-	github.com/pion/ice/v2 v2.3.6 // indirect
+	github.com/pion/ice/v2 v2.3.7 // indirect
 	github.com/pion/interceptor v0.1.17 // indirect
 	github.com/pion/logging v0.2.2 // indirect
 	github.com/pion/mdns v0.0.7 // indirect
@@ -35,7 +35,7 @@ require (
 	github.com/stretchr/testify v1.8.4 // indirect
 	golang.org/x/crypto v0.9.0 // indirect
 	golang.org/x/net v0.10.0 // indirect
-	golang.org/x/sys v0.8.0 // indirect
+	golang.org/x/sys v0.9.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	nhooyr.io/websocket v1.8.7 // indirect
 )
