@@ -8,7 +8,7 @@ package teowebrtc_client
 import (
 	"encoding/json"
 
-	"github.com/pion/webrtc/v3"
+	"github.com/pion/webrtc/v4"
 	"github.com/teonet-go/teowebrtc_log"
 	"github.com/teonet-go/teowebrtc_signal_client"
 )
